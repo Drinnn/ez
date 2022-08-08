@@ -18,6 +18,12 @@ type Ez struct {
 	ErrorLog *log.Logger
 	InfoLog  *log.Logger
 	RootPath string
+	config   config
+}
+
+type config struct {
+	port     string
+	renderer string
 }
 
 func (e *Ez) New(rootPath string) error {
@@ -52,10 +58,16 @@ func (e *Ez) New(rootPath string) error {
 
 	errorLog, infoLog := e.startLoggers()
 
-	e.Version = version
 	e.Debug, _ = strconv.ParseBool(os.Getenv("DEBUG"))
+	e.Version = version
 	e.ErrorLog = errorLog
 	e.InfoLog = infoLog
+	e.RootPath = rootPath
+
+	e.config = config{
+		port:     os.Getenv("PORT"),
+		renderer: os.Getenv("RENDERER"),
+	}
 
 	return nil
 }
