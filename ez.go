@@ -1,5 +1,11 @@
 package ez
 
+import (
+	"fmt"
+
+	"github.com/joho/godotenv"
+)
+
 // const version = "1.0.0"
 
 type Ez struct {
@@ -28,6 +34,16 @@ func (e *Ez) New(rootPath string) error {
 		return err
 	}
 
+	err = e.checkDotEnv(rootPath)
+	if err != nil {
+		return nil
+	}
+
+	err = godotenv.Load(rootPath + "/.env")
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -38,6 +54,15 @@ func (e *Ez) Init(p initPaths) error {
 		if err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (e *Ez) checkDotEnv(path string) error {
+	err := e.CreateFileIfDoesntExist(fmt.Sprintf("%s/.env", path))
+	if err != nil {
+		return err
 	}
 
 	return nil
