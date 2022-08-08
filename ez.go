@@ -2,16 +2,22 @@ package ez
 
 import (
 	"fmt"
+	"log"
+	"os"
+	"strconv"
 
 	"github.com/joho/godotenv"
 )
 
-// const version = "1.0.0"
+const version = "1.0.0"
 
 type Ez struct {
-	AppName string
-	Debug   bool
-	Version string
+	AppName  string
+	Debug    bool
+	Version  string
+	ErrorLog *log.Logger
+	InfoLog  *log.Logger
+	RootPath string
 }
 
 func (e *Ez) New(rootPath string) error {
@@ -44,6 +50,13 @@ func (e *Ez) New(rootPath string) error {
 		return err
 	}
 
+	errorLog, infoLog := e.startLoggers()
+
+	e.Version = version
+	e.Debug, _ = strconv.ParseBool(os.Getenv("DEBUG"))
+	e.ErrorLog = errorLog
+	e.InfoLog = infoLog
+
 	return nil
 }
 
@@ -66,4 +79,11 @@ func (e *Ez) checkDotEnv(path string) error {
 	}
 
 	return nil
+}
+
+func (e *Ez) startLoggers() (*log.Logger, *log.Logger) {
+	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+
+	return errorLog, infoLog
 }
