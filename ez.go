@@ -3,9 +3,12 @@ package ez
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"strconv"
+	"time"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
 )
 
@@ -18,6 +21,7 @@ type Ez struct {
 	ErrorLog *log.Logger
 	InfoLog  *log.Logger
 	RootPath string
+	Routes   *chi.Mux
 	config   config
 }
 
@@ -63,6 +67,7 @@ func (e *Ez) New(rootPath string) error {
 	e.ErrorLog = errorLog
 	e.InfoLog = infoLog
 	e.RootPath = rootPath
+	e.Routes = e.routes().(*chi.Mux)
 
 	e.config = config{
 		port:     os.Getenv("PORT"),
@@ -82,6 +87,22 @@ func (e *Ez) Init(p initPaths) error {
 	}
 
 	return nil
+}
+
+func (e *Ez) ListenAndServe() {
+	srv := &http.Server{
+		Addr:         ":" + e.config.port,
+		ErrorLog:     e.ErrorLog,
+		Handler:      e.routes(),
+		IdleTimeout:  30 * time.Second,
+		ReadTimeout:  30 * time.Second,
+		WriteTimeout: 60 * time.Second,
+	}
+
+	e.InfoLog.Printf("Server is running on port %s", e.config.port)
+
+	err := srv.ListenAndServe()
+	e.ErrorLog.Fatal(err)
 }
 
 func (e *Ez) checkDotEnv(path string) error {
